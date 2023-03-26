@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TarkovLoot</string>
+    <string name="fail">Fail</string>
 </resources>

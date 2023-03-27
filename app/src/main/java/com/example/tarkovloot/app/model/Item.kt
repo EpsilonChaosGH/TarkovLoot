@@ -2,7 +2,7 @@ package com.example.tarkovloot.app.model
 
 data class Item(
     val name: String,
-    val basePrice: Long,
+    var basePrice: Long,
     val width: Long,
     val height: Long,
     val iconLink: String,

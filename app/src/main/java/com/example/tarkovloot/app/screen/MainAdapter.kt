@@ -4,6 +4,10 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.example.tarkovloot.R
 import com.example.tarkovloot.app.model.Item
 import com.example.tarkovloot.databinding.ItemItemBinding
 
@@ -33,6 +37,18 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.ItemViewHolder>() {
 
             itemNameTextView.text = item.name
             itemPriceTextView.text = item.basePrice.toString()
+
+            if (item.iconLink.isNotBlank()) {
+                Glide.with(itemImageView.context)
+                    .load(item.iconLink)
+                    //.circleCrop()
+                    .transform(CenterInside(), RoundedCorners(24))
+                    .placeholder(R.drawable.ic_baseline_hide_image)
+                    .error(R.drawable.ic_baseline_hide_image)
+                    .into(itemImageView)
+            } else {
+                itemImageView.setImageResource(R.drawable.ic_baseline_hide_image)
+            }
         }
     }
 

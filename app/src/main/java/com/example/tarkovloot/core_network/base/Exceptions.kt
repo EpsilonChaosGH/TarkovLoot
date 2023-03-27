@@ -1,5 +1,10 @@
 package com.example.tarkovloot.core_network.base
 
+import android.database.sqlite.SQLiteException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.withContext
+
 
 open class AppException : RuntimeException {
     constructor() : super()
@@ -44,5 +49,18 @@ internal inline fun <T> wrapBackendExceptions(block: () -> T): T {
             429 -> throw RequestRateLimitException(e)
             else -> throw e
         }
+    }
+}
+
+suspend fun <T> wrapSQLiteException(
+    dispatcher: CoroutineDispatcher,
+    block: suspend CoroutineScope.() -> T
+): T {
+    try {
+        return withContext(dispatcher, block)
+    } catch (e: SQLiteException) {
+        val appException = StorageException()
+        appException.initCause(e)
+        throw appException
     }
 }

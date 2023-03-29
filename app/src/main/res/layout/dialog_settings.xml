@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main_text_color"
+    android:gravity="top"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/TitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings"
+        android:textColor="@color/black"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/priceForOneCellSwitch"
+        style="@style/dialogSwitchCompat"
+        android:layout_marginTop="16dp"
+        android:text="@string/price_for_one_cell" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/priceWithMarketSwitch"
+        style="@style/dialogSwitchCompat"
+        android:text="@string/price_with_market" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/sortByPriceLowToHighSwitch"
+        style="@style/dialogSwitchCompat"
+        android:text="@string/sort_by_price_low_to_high" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

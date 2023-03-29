@@ -1,13 +1,17 @@
 package com.example.tarkovloot.core_data
 
 import com.example.tarkovloot.app.model.Config
-import com.example.tarkovloot.app.model.MainState
+import com.example.tarkovloot.app.model.Item
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
 
-    fun saveConfig(config: Config)
+    suspend fun refreshItems()
 
-    suspend fun getItemsFlow(): Flow<MainState>
+    suspend fun getConfigFlow(): Flow<Config>
+
+    suspend fun saveConfig(config: Config)
+
+    suspend fun getItemsFlow(): Flow<List<Item>>
 
 }

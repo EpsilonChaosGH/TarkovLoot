@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tarkovloot.app.model.Config
-import com.example.tarkovloot.app.model.MainState
+import com.example.tarkovloot.app.model.Item
 import com.example.tarkovloot.core_data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -17,10 +17,14 @@ class MainViewModel @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _state = MutableLiveData<MainState>()
-    val state: LiveData<MainState> = _state
+    private val _itemsState = MutableLiveData<List<Item>>()
+    val itemsState: LiveData<List<Item>> = _itemsState
+
+    private val _configState = MutableLiveData<Config>()
+    val configState: LiveData<Config> = _configState
 
     init {
+        listenCurrentConfig()
         listenCurrentState()
     }
 
@@ -32,8 +36,16 @@ class MainViewModel @Inject constructor(
 
     private fun listenCurrentState() {
         viewModelScope.launch {
-            repository.getItemsFlow().collect(){
-                _state.value = it
+            repository.getItemsFlow().collect() {
+                _itemsState.value = it
+            }
+        }
+    }
+
+    private fun listenCurrentConfig() {
+        viewModelScope.launch {
+            repository.getConfigFlow().collect() {
+                _configState.value = it
             }
         }
     }

@@ -10,3 +10,11 @@ fun GetItemResponseEntity.toItem() = Item(
     height = data.itemsByName.firstOrNull()?.height ?: 0,
     iconLink = data.itemsByName.firstOrNull()?.iconLink ?: "",
 )
+
+fun Item.toOneCellPrise() = Item(
+    name = name,
+    basePrice = (basePrice / (width * height)),
+    width = width,
+    height = height,
+    iconLink = iconLink,
+)

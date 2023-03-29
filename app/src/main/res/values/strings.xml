@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">TarkovLoot</string>
     <string name="fail">Fail</string>
+    <string name="ok">OK</string>
+    <string name="price_for_one_cell">Price for one cell</string>
+    <string name="price_with_market">Price with market</string>
+    <string name="sort_by_price_low_to_high">Sort by price: low to high</string>
+    <string name="settings">Settings</string>
 </resources>

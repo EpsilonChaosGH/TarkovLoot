@@ -5,10 +5,7 @@ import com.example.tarkovloot.app.model.Config
 import com.example.tarkovloot.app.model.Const
 import com.example.tarkovloot.app.model.Item
 import com.example.tarkovloot.app.model.MainState
-import com.example.tarkovloot.core_data.mapper.toConfig
-import com.example.tarkovloot.core_data.mapper.toConfigDbEntity
-import com.example.tarkovloot.core_data.mapper.toItem
-import com.example.tarkovloot.core_data.mapper.toOneCellPrise
+import com.example.tarkovloot.core_data.mapper.*
 import com.example.tarkovloot.core_db.AppDatabase
 import com.example.tarkovloot.core_network.base.wrapBackendExceptions
 import com.example.tarkovloot.core_network.base.wrapSQLiteException
@@ -225,7 +222,7 @@ class RepositoryImpl @Inject constructor(
         "Topographic survey maps",
         "Video cassette with the Cyborg Killer movie",
         "Body armor repair kit",
-        "Digital secure DSP radio transmitter",
+        // "Digital secure DSP radio transmitter",
         "EYE MK.2 professional hand-held compass",
         "Leatherman Multitool",
         "MS2000 Marker",
@@ -237,8 +234,9 @@ class RepositoryImpl @Inject constructor(
     )
     private var currentItems: List<Item> = listOf()
 
-    override suspend fun refreshItems() {
+    override suspend fun refreshItems(): Unit = wrapSQLiteException(Dispatchers.IO) {
         currentItems = getItemList()
+        getSortedList(appDatabase.configDao().getConfig(Const.KEY_CONFIG).toConfig())
     }
 
     override suspend fun getConfigFlow(): Flow<Config> = wrapSQLiteException(Dispatchers.IO) {
@@ -252,20 +250,31 @@ class RepositoryImpl @Inject constructor(
     override suspend fun getItemsFlow(): Flow<List<Item>> = wrapSQLiteException(Dispatchers.IO) {
         appDatabase.configDao().getConfigFlow(Const.KEY_CONFIG).map { config ->
 
-            val items = currentItems.ifEmpty { getItemList() }.toMutableList()
-
-            val sortedItems = if (config.priceForOneCell) {
-                items.map { it.toOneCellPrise() }.toMutableList()
-            } else {
-                items
-            }
-
-            if (config.sortByPriceLowToHigh) sortedItems.sortBy { it.basePrice }
-            else {
-                sortedItems.sortByDescending { it.basePrice }
-            }
-            return@map sortedItems
+            return@map getSortedList(config.toConfig())
         }
+    }
+
+    private suspend fun getSortedList(config: Config): List<Item> {
+
+        val items = currentItems.ifEmpty { getItemList() }.toMutableList()
+
+        val sortedItems1 = if (config.priceWithMarket) {
+            items.map { it.toPriceWithMarket() }.toMutableList()
+        } else {
+            items
+        }
+
+        val sortedItems = if (config.priceForOneCell) {
+            sortedItems1.map { it.toOneCellPrise() }.toMutableList()
+        } else {
+            sortedItems1
+        }
+
+        if (config.sortByPriceLowToHigh) sortedItems.sortBy { it.basePrice }
+        else {
+            sortedItems.sortByDescending { it.basePrice }
+        }
+        return sortedItems
     }
 
     private suspend fun getItemList(): List<Item> =
@@ -277,7 +286,9 @@ class RepositoryImpl @Inject constructor(
                 }
                 favoritesDef.add(response)
             }
-            val items = favoritesDef.map { it.await() }.toMutableList()
+            val items = favoritesDef.map {
+                it.await()
+            }.toMutableList()
             currentItems = items
             return@withContext items
         }

@@ -34,6 +34,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    suspend fun refreshCurrentItems() {
+        viewModelScope.launch {
+            repository.refreshItems()
+        }.join()
+    }
+
     private fun listenCurrentState() {
         viewModelScope.launch {
             repository.getItemsFlow().collect() {

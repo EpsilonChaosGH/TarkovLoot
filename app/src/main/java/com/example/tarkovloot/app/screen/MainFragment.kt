@@ -10,6 +10,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.tarkovloot.R
@@ -37,6 +38,18 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
         }
         addMenu()
+        observeRefresh()
+    }
+
+    private fun observeRefresh() {
+        binding.refreshLayout.setColorSchemeResources(R.color.main_text_color)
+        binding.refreshLayout.setProgressBackgroundColorSchemeResource(R.color.main_color)
+        binding.refreshLayout.setOnRefreshListener {
+            lifecycleScope.launchWhenStarted {
+                viewModel.refreshCurrentItems()
+                binding.refreshLayout.isRefreshing = false
+            }
+        }
     }
 
     private fun setupLayoutManager(binding: FragmentMainBinding, adapter: MainAdapter) {

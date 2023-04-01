@@ -30,19 +30,35 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.ItemViewHolder>() {
         return ItemViewHolder(binding)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val item = itemList[position]
 
         with(holder.binding) {
 
-            itemNameTextView.text = item.name
-            itemPriceTextView.text = item.basePrice.toString()
+//            itemNameTextView.text = item.name
+            itemPriceTextView.text = "${item.basePrice} ₽"
+
+            val source = when (item.source) {
+                "fleaMarket" -> R.drawable.ic_shopping_cart
+                "fence" -> R.drawable.fence_icon
+                "jaeger" -> R.drawable.jaeger_icon
+                "mechanic" -> R.drawable.mechanic_icon
+                "peacekeeper" -> R.drawable.peacekeeper_icon
+                "prapor" -> R.drawable.prapor_icon
+                "ragman" -> R.drawable.ragman_icon
+                "skier" -> R.drawable.skier_icon
+                "therapist" -> R.drawable.therapist_icon
+                else -> R.drawable.ic_settings
+            }
+            sourceImageView.setImageResource(source)
+//            sourceTextView.text =   item.source
 
             if (item.iconLink.isNotBlank()) {
                 Glide.with(itemImageView.context)
                     .load(item.iconLink)
                     //.circleCrop()
-                    .transform(CenterInside(), RoundedCorners(24))
+                    //   .transform(CenterInside(), RoundedCorners(24))
                     .placeholder(R.drawable.ic_baseline_hide_image)
                     .error(R.drawable.ic_baseline_hide_image)
                     .into(itemImageView)

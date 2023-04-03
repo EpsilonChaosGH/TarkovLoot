@@ -4,25 +4,21 @@ import android.util.Log
 import com.example.tarkovloot.app.model.Config
 import com.example.tarkovloot.app.model.Const
 import com.example.tarkovloot.app.model.Item
-import com.example.tarkovloot.app.model.MainState
 import com.example.tarkovloot.core_data.mapper.*
 import com.example.tarkovloot.core_db.AppDatabase
-import com.example.tarkovloot.core_network.base.wrapBackendExceptions
 import com.example.tarkovloot.core_network.base.wrapSQLiteException
 import com.example.tarkovloot.core_network.main.MainSource
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class RepositoryImpl @Inject constructor(
     private val mainSource: MainSource,
-    private val appDatabase: AppDatabase
+    private val appDatabase: AppDatabase,
+    private val ioDispatcher: CoroutineDispatcher
 ) : Repository {
 
     private val list = listOf(
@@ -234,22 +230,21 @@ class RepositoryImpl @Inject constructor(
     )
     private var currentItems: List<Item> = listOf()
 
-    override suspend fun refreshItems(): Unit = wrapSQLiteException(Dispatchers.IO) {
+    override suspend fun refreshItems(): Unit = wrapSQLiteException(ioDispatcher) {
         currentItems = getItemList()
         getSortedList(appDatabase.configDao().getConfig(Const.KEY_CONFIG).toConfig())
     }
 
-    override suspend fun getConfigFlow(): Flow<Config> = wrapSQLiteException(Dispatchers.IO) {
+    override suspend fun getConfigFlow(): Flow<Config> = wrapSQLiteException(ioDispatcher) {
         appDatabase.configDao().getConfigFlow(Const.KEY_CONFIG).map { it.toConfig() }
     }
 
-    override suspend fun saveConfig(config: Config) = wrapSQLiteException(Dispatchers.IO) {
+    override suspend fun saveConfig(config: Config) = wrapSQLiteException(ioDispatcher) {
         appDatabase.configDao().insertConfig(config.toConfigDbEntity())
     }
 
-    override suspend fun getItemsFlow(): Flow<List<Item>> = wrapSQLiteException(Dispatchers.IO) {
+    override suspend fun getItemsFlow(): Flow<List<Item>> = wrapSQLiteException(ioDispatcher) {
         appDatabase.configDao().getConfigFlow(Const.KEY_CONFIG).map { config ->
-
             return@map getSortedList(config.toConfig())
         }
     }
@@ -277,19 +272,16 @@ class RepositoryImpl @Inject constructor(
         return sortedItems
     }
 
-    private suspend fun getItemList(): List<Item> =
-        withContext(Dispatchers.IO) {
-            val favoritesDef = mutableListOf<Deferred<Item>>()
+    private suspend fun getItemList(): List<Item> {
+        val newItems = mutableListOf<Item>()
+        withContext(ioDispatcher) {
             list.map {
-                val response = async {
-                    return@async mainSource.getItemByName(it).toItem()
-                }
-                favoritesDef.add(response)
+                async { mainSource.getItemByName(it).toItem() }
+            }.awaitAll().forEach {
+                newItems.add(it)
             }
-            val items = favoritesDef.map {
-                it.await()
-            }.toMutableList()
-            currentItems = items
-            return@withContext items
         }
+        currentItems = newItems
+        return newItems
+    }
 }

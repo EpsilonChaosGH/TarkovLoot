@@ -1,6 +1,5 @@
 package com.example.tarkovloot.core_data
 
-import android.util.Log
 import com.example.tarkovloot.app.model.Config
 import com.example.tarkovloot.app.model.Const
 import com.example.tarkovloot.app.model.Item
